@@ -345,9 +345,16 @@ const allSections = [
                 'Total Candidates': cData.allCandidateData.length - 1, //Removed NOTA
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
+                'Total Casted Votes': cData['Total Casted Votes'],
                 Margin: cData.Margin,
-                'Total Votes': cData.Winner['Total Votes'],
-                'Total Casted Votes': cData['Total Casted Votes']
+                'Winner Votes': cData.Winner['Total Votes'],
+
+                'Voter Percentage of Winner':
+                    (cData.Winner['Total Votes'] /
+                        cData['Total Casted Votes']) *
+                    100,
+                'Margin Percentage':
+                    (cData.Margin / cData['Total Casted Votes']) * 100
             });
             //cData.allCandidateData.map(function(candidateData) {});
         });
@@ -358,7 +365,9 @@ const allSections = [
             'Total Candidates': '-',
             'Winner Candidate': '-',
             'Winner Party': '-',
-            'Total Votes': totalVotersOfWinner,
+            'Margin Percentage': '-',
+            'Voter Percentage of Winner': '-',
+            'Winner Votes': totalVotersOfWinner,
             Margin: '-',
             'Total Casted Votes': totalCastedVotes
         });
