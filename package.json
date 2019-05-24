@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "live-server --ignore=.git",
+    "start": "live-server src",
     "getData": "nodemon -r esm --inspect-brk --inspect=0.0.0.0:9229 ./main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
