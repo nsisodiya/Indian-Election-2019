@@ -189,6 +189,8 @@ function runDataProcessPipeLine(callback) {
             fun(mainData);
         });
         //AllDataProcessing is over, now, we can create sections.
+        //loader
+        $('#loader').remove();
         console.log('mainData', mainData);
         generateAllSections(mainData);
     });
