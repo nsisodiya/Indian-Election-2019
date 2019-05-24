@@ -333,10 +333,11 @@ const allSections = [
                 Index: i + 1,
                 State: cData.stateName,
                 Constituency: cData.name,
+                'Total Candidates': cData.allCandidateData.length - 1, //Removed NOTA
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
-                'Total Votes': cData.Winner['Total Votes'],
-                Margin: cData.Margin
+                Margin: cData.Margin,
+                'Total Votes': cData.Winner['Total Votes']
             });
             //cData.allCandidateData.map(function(candidateData) {});
         });
@@ -344,6 +345,7 @@ const allSections = [
             Index: 'Total',
             State: '-',
             Constituency: '-',
+            'Total Candidates': '-',
             'Winner Candidate': '-',
             'Winner Party': '-',
             'Total Votes': totalVotersOfWinner,
