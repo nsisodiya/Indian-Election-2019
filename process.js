@@ -321,21 +321,33 @@ const allSections = [
         //This Section list out all winners.
         var sectionTitle = 'List of All Constituency and Winner Party';
         var sectionData = [];
+        var totalVotersOfWinner = 0;
         mainData.map(function(cData, i) {
             var winnerIndex = util.findMaxInArrayOofObj(
                 cData.allCandidateData,
                 'Total Votes'
             );
             cData.Winner = cData.allCandidateData[winnerIndex];
+            totalVotersOfWinner += cData.Winner['Total Votes'];
             sectionData.push({
                 Index: i + 1,
                 State: cData.stateName,
                 Constituency: cData.name,
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
+                'Total Votes': cData.Winner['Total Votes'],
                 Margin: cData.Margin
             });
             //cData.allCandidateData.map(function(candidateData) {});
+        });
+        sectionData.push({
+            Index: 'Total',
+            State: '-',
+            Constituency: '-',
+            'Winner Candidate': '-',
+            'Winner Party': '-',
+            'Total Votes': totalVotersOfWinner,
+            Margin: '-'
         });
         return {
             sectionTitle: sectionTitle,
