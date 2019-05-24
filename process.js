@@ -96,6 +96,12 @@ const dataProcessChains = [
                     candidateData['Total Votes'],
                     10
                 );
+                if (
+                    candidateData['Total Votes'] !==
+                    candidateData['Postal Votes'] + candidateData['EVM Votes']
+                ) {
+                    console.log('Calculation Mistake', cData.stateName);
+                }
                 mainData.metaData.totalVotesCasted =
                     mainData.metaData.totalVotesCasted +
                     candidateData['Total Votes'];
@@ -111,6 +117,11 @@ const dataProcessChains = [
                 'Total Votes'
             );
             cData.Winner = cData.allCandidateData[winnerIndex];
+            cData.Margin = cData.allCandidateData
+                .map(function(cand) {
+                    return cData.Winner['Total Votes'] - cand['Total Votes'];
+                })
+                .sort()[1];
             if (
                 mainData.metaData.partyWiseData[cData.Winner.Party] ===
                 undefined
@@ -121,7 +132,7 @@ const dataProcessChains = [
             }
             mainData.metaData.partyWiseData[cData.Winner.Party].count =
                 mainData.metaData.partyWiseData[cData.Winner.Party].count + 1;
-            //cData.allCandidateData.map(function(candidateData) {});
+            //Calculate Margin
         });
         mainData.metaData.partyData = util.SortArrayOfObject(
             Object.keys(mainData.metaData.partyWiseData).map(function(v) {
@@ -225,6 +236,50 @@ const allSections = [
             sectionData: sectionData
         };
     },
+    function Top50WithHighestMargin(mainData) {
+        var sectionTitle = 'Top 50 Candidate who won with High margin';
+        var listOfWinners = [];
+        mainData.map(function(cData) {
+            listOfWinners.push({
+                'Winner Candidate': cData.Winner.Candidate,
+                'Winner Party': cData.Winner.Party,
+                State: cData.stateName,
+                Constituency: cData.name,
+                Margin: cData.Margin
+            });
+        });
+
+        var sectionData = util.stripArray(
+            util.SortArrayOfObject(listOfWinners, 'Margin'),
+            50
+        );
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
+    function Top50WithLeastMargin(mainData) {
+        var sectionTitle = 'Top 50 Candidate who won with Least margin';
+        var listOfWinners = [];
+        mainData.map(function(cData) {
+            listOfWinners.push({
+                'Winner Candidate': cData.Winner.Candidate,
+                'Winner Party': cData.Winner.Party,
+                State: cData.stateName,
+                Constituency: cData.name,
+                Margin: cData.Margin
+            });
+        });
+
+        var sectionData = util.stripArray(
+            util.SortArrayOfObject(listOfWinners, 'Margin').reverse(),
+            50
+        );
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
     function Top50CandidateWithHighestVotes(mainData) {
         var sectionTitle = 'These 50 candidate got maximum votes in';
         var fullListOfAllCandidate = [];
@@ -233,6 +288,8 @@ const allSections = [
                 fullListOfAllCandidate.push({
                     Candidate: candidateData.Candidate,
                     Party: candidateData.Party,
+                    State: cData.stateName,
+                    Constituency: cData.name,
                     'Total Votes': candidateData['Total Votes']
                 });
             });
@@ -240,6 +297,32 @@ const allSections = [
 
         var sectionData = util.stripArray(
             util.SortArrayOfObject(fullListOfAllCandidate, 'Total Votes'),
+            50
+        );
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
+    function Top50CandidateWithLowestVotes(mainData) {
+        var sectionTitle = 'These 50 candidate got least votes';
+        var fullListOfAllCandidate = [];
+        mainData.map(function(cData) {
+            cData.allCandidateData.map(function(candidateData) {
+                fullListOfAllCandidate.push({
+                    Candidate: candidateData.Candidate,
+                    Party: candidateData.Party,
+                    State: cData.stateName,
+                    Constituency: cData.name,
+                    'Total Votes': candidateData['Total Votes']
+                });
+            });
+        });
+
+        var sectionData = util.stripArray(
+            util
+                .SortArrayOfObject(fullListOfAllCandidate, 'Total Votes')
+                .reverse(),
             50
         );
         return {
@@ -262,7 +345,8 @@ const allSections = [
                 State: cData.stateName,
                 Constituency: cData.name,
                 'Winner Candidate': cData.Winner.Candidate,
-                'Winner Party': cData.Winner.Party
+                'Winner Party': cData.Winner.Party,
+                Margin: cData.Margin
             });
             //cData.allCandidateData.map(function(candidateData) {});
         });

@@ -2422,13 +2422,25 @@ function getDataFromUrl(url) {
                         .map((i, x) => {
                             return $(x).text();
                         });
-                    allCandidateData.push({
-                        Candidate: data[1],
-                        Party: data[2],
-                        'EVM Votes': data[3],
-                        'Postal Votes': data[4],
-                        'Total Votes': data[5]
-                    });
+                    console.log('Data Length', data.length);
+                    if (data.length === 8) {
+                        allCandidateData.push({
+                            Candidate: data[1],
+                            Party: data[2],
+                            'EVM Votes': data[3],
+                            'Migrant Votes': data[4],
+                            'Postal Votes': data[5],
+                            'Total Votes': data[6]
+                        });
+                    } else {
+                        allCandidateData.push({
+                            Candidate: data[1],
+                            Party: data[2],
+                            'EVM Votes': data[3],
+                            'Postal Votes': data[4],
+                            'Total Votes': data[5]
+                        });
+                    }
                 }
             });
             return allCandidateData;
@@ -2456,7 +2468,7 @@ function scrapDataforall() {
                     cid: c.id,
                     allCandidateData: allCandidateData
                 };
-                console.log('constituencyData', cData);
+                //console.log('constituencyData', cData);
                 return cData;
             });
             pArray.push(p);
