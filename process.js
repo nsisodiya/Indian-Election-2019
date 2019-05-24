@@ -4,6 +4,11 @@ const util = {
     format: function name(num) {
         return num.toLocaleString('en-In');
     },
+    stripArray: function name(arr, num) {
+        return arr.filter(function(v, i) {
+            return i < num;
+        });
+    },
     SortArrayOfObject: function(AoO, key) {
         return AoO.sort(function compare(b, a) {
             const genreA = a[key];
@@ -174,9 +179,9 @@ const allSections = [
             });
         });
 
-        var sectionData = util.SortArrayOfObject(
-            fullListOfAllCandidate,
-            'Total Votes'
+        var sectionData = util.stripArray(
+            util.SortArrayOfObject(fullListOfAllCandidate, 'Total Votes'),
+            50
         );
         return {
             sectionTitle: sectionTitle,
