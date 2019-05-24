@@ -80,6 +80,7 @@ const dataProcessChains = [
     },
     function convertStringsToNum(mainData) {
         //This function calculate who won in a particular constituency
+        mainData.metaData.totalVotesCasted = 0;
         mainData.map(function(cData) {
             cData.allCandidateData.map(function(candidateData) {
                 //candidateData.
@@ -95,6 +96,9 @@ const dataProcessChains = [
                     candidateData['Total Votes'],
                     10
                 );
+                mainData.metaData.totalVotesCasted =
+                    mainData.metaData.totalVotesCasted +
+                    candidateData['Total Votes'];
             });
         });
     },
@@ -158,6 +162,18 @@ function runDataProcessPipeLine(callback) {
 runDataProcessPipeLine();
 
 const allSections = [
+    function TotalVotesPartyWise(mainData) {
+        var sectionTitle = 'Total Votes';
+        var sectionData = [
+            {
+                'Total Votes Casted': mainData.metaData.totalVotesCasted
+            }
+        ];
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
     function TotalVotesPartyWise(mainData) {
         var sectionTitle = 'Parties wise Data';
         var sectionData = mainData.metaData.partyData;
