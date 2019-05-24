@@ -356,15 +356,6 @@ const allSections = [
             sectionTitle: sectionTitle,
             sectionData: sectionData
         };
-    },
-    function ListTop10HightestVotes(mainData) {
-        //This Section list out all winners.
-        var sectionTitle = 'Top 10 candidates with hightest Votes';
-        var sectionData = [{ name: 'nn' }, { name: 'pp' }];
-        return {
-            sectionTitle: sectionTitle,
-            sectionData: sectionData
-        };
     }
 ];
 function generateAllSections(mainData) {
