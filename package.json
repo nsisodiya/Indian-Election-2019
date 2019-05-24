@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon -r esm --inspect-brk --inspect=0.0.0.0:9229 ./main.js",
+    "start": "live-server --ignore=.git",
+    "getData": "nodemon -r esm --inspect-brk --inspect=0.0.0.0:9229 ./main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,6 +14,7 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.3",
     "esm": "^3.2.25",
+    "live-server": "^1.2.1",
     "nodemon": "^1.19.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.4"
