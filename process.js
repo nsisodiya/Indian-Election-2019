@@ -134,6 +134,30 @@ const dataProcessChains = [
             'Total Candidate Won'
         );
     },
+    function VotesByParty(mainData) {
+        mainData.map(function(cData) {
+            cData.allCandidateData.map(function(candidateData) {
+                if (
+                    mainData.metaData.partyWiseData[candidateData['Party']] ===
+                    undefined
+                ) {
+                    mainData.metaData.partyWiseData[
+                        candidateData['Party']
+                    ] = {};
+                }
+                if (
+                    mainData.metaData.partyWiseData[candidateData['Party']]
+                        .votes === undefined
+                ) {
+                    mainData.metaData.partyWiseData[
+                        candidateData['Party']
+                    ].votes = 0;
+                }
+                mainData.metaData.partyWiseData[candidateData['Party']].votes +=
+                    candidateData['Total Votes'];
+            });
+        });
+    },
     function ListAllParties(mainData) {
         //This will list out all the parties
         var allParties = {};
@@ -169,6 +193,25 @@ const allSections = [
                 'Total Votes Casted': mainData.metaData.totalVotesCasted
             }
         ];
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
+    function TotalVotesPartyWise(mainData) {
+        var sectionTitle = 'Top 30 Parties with their Votes';
+        var sectionData = util.stripArray(
+            util.SortArrayOfObject(
+                Object.keys(mainData.metaData.partyWiseData).map(function(v) {
+                    return {
+                        Party: v,
+                        Votes: mainData.metaData.partyWiseData[v].votes
+                    };
+                }),
+                'Votes'
+            ),
+            30
+        );
         return {
             sectionTitle: sectionTitle,
             sectionData: sectionData
