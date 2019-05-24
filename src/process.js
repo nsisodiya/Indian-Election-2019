@@ -1,6 +1,51 @@
 //alert('data');
 //get JSON data
 const util = {
+    format: function name(num) {
+        return num.toLocaleString('en-In');
+    },
+    SortArrayOfObject: function(AoO, key) {
+        return AoO.sort(function compare(b, a) {
+            const genreA = a[key];
+            const genreB = b[key];
+
+            let comparison = 0;
+            if (genreA > genreB) {
+                comparison = 1;
+            } else if (genreA < genreB) {
+                comparison = -1;
+            }
+            return comparison;
+        });
+    },
+    JsonDataToTable: function(data) {
+        var headers = Object.keys(data[0]);
+        return `<table class="table"><thead>
+                <tr>
+                ${headers
+                    .map(function(key) {
+                        return `<th>${key}</th>`;
+                    })
+                    .join('')}
+                </tr>
+            </thead>
+            <tbody>${data
+                .map(function(rowData) {
+                    return `<tr>${headers
+                        .map(function(key) {
+                            return `<td>${(function(params) {
+                                if (typeof rowData[key] === 'number') {
+                                    return util.format(rowData[key]);
+                                }
+                                return rowData[key];
+                            })()}</td>`;
+                        })
+                        .join('')}</tr>`;
+                })
+                .join('')}
+            </tbody>
+            </table>`;
+    },
     getJSONDataFromUrl: function(url, callback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
@@ -25,6 +70,9 @@ const util = {
     }
 };
 const dataProcessChains = [
+    function AddMetaData(mainData) {
+        mainData.metaData = {};
+    },
     function convertStringsToNum(mainData) {
         //This function calculate who won in a particular constituency
         mainData.map(function(cData) {
@@ -47,14 +95,47 @@ const dataProcessChains = [
     },
     function appendWinnerFlag(mainData) {
         //This function calculate who won in a particular constituency
+        mainData.metaData.partyWiseData = {};
         mainData.map(function(cData) {
             var winnerIndex = util.findMaxInArrayOofObj(
                 cData.allCandidateData,
                 'Total Votes'
             );
             cData.Winner = cData.allCandidateData[winnerIndex];
+            if (
+                mainData.metaData.partyWiseData[cData.Winner.Party] ===
+                undefined
+            ) {
+                mainData.metaData.partyWiseData[cData.Winner.Party] = {
+                    count: 0
+                };
+            }
+            mainData.metaData.partyWiseData[cData.Winner.Party].count =
+                mainData.metaData.partyWiseData[cData.Winner.Party].count + 1;
             //cData.allCandidateData.map(function(candidateData) {});
         });
+        mainData.metaData.partyData = util.SortArrayOfObject(
+            Object.keys(mainData.metaData.partyWiseData).map(function(v) {
+                return {
+                    Party: v,
+                    'Total Candidate Won':
+                        mainData.metaData.partyWiseData[v].count
+                };
+            }),
+            'Total Candidate Won'
+        );
+    },
+    function ListAllParties(mainData) {
+        //This will list out all the parties
+        var allParties = {};
+        mainData.map(function(cData) {
+            cData.allCandidateData.map(function(candidateData) {
+                allParties[candidateData.Party] = true;
+            });
+        });
+        allParties = Object.keys(allParties).sort();
+        console.log(allParties);
+        mainData.metaData.allParties = allParties;
     }
 ];
 
@@ -70,31 +151,38 @@ function runDataProcessPipeLine(callback) {
 }
 
 runDataProcessPipeLine();
-function JsonDataToTable(data) {
-    var headers = Object.keys(data[0]);
-    return `<table class="table"><thead>
-        <tr>
-        ${headers
-            .map(function(key) {
-                return `<th>${key}</th>`;
-            })
-            .join('')}
-        </tr>
-    </thead>
-    <tbody>${data
-        .map(function(rowData) {
-            return `<tr>${headers
-                .map(function(key) {
-                    return `<td>${rowData[key]}</td>`;
-                })
-                .join('')}</tr>`;
-        })
-        .join('')}
-    </tbody>
-    </table>`;
-}
 
 const allSections = [
+    function TotalVotesPartyWise(mainData) {
+        var sectionTitle = 'Parties wise Data';
+        var sectionData = mainData.metaData.partyData;
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
+    function Top50CandidateWithHighestVotes(mainData) {
+        var sectionTitle = 'These 50 candidate got maximum votes in';
+        var fullListOfAllCandidate = [];
+        mainData.map(function(cData) {
+            cData.allCandidateData.map(function(candidateData) {
+                fullListOfAllCandidate.push({
+                    Candidate: candidateData.Candidate,
+                    Party: candidateData.Party,
+                    'Total Votes': candidateData['Total Votes']
+                });
+            });
+        });
+
+        var sectionData = util.SortArrayOfObject(
+            fullListOfAllCandidate,
+            'Total Votes'
+        );
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
     function ListAllWinners(mainData) {
         //This Section list out all winners.
         var sectionTitle = 'List of All Constituency and Winner Party';
@@ -118,6 +206,15 @@ const allSections = [
             sectionTitle: sectionTitle,
             sectionData: sectionData
         };
+    },
+    function ListTop10HightestVotes(mainData) {
+        //This Section list out all winners.
+        var sectionTitle = 'Top 10 candidates with hightest Votes';
+        var sectionData = [{ name: 'nn' }, { name: 'pp' }];
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
     }
 ];
 function generateAllSections(mainData) {
@@ -127,7 +224,7 @@ function generateAllSections(mainData) {
         <div class="section">
             <h1>${sData.sectionTitle}</h1>
             <div class="tableData">
-                ${JsonDataToTable(sData.sectionData)}
+                ${util.JsonDataToTable(sData.sectionData)}
             </div>
         </div>
         `);
