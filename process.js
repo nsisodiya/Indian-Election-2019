@@ -83,25 +83,10 @@ const dataProcessChains = [
         mainData.metaData.totalVotesCasted = 0;
         mainData.map(function(cData) {
             cData.allCandidateData.map(function(candidateData) {
-                //candidateData.
-                candidateData['EVM Votes'] = parseInt(
-                    candidateData['EVM Votes'],
-                    10
-                );
-                candidateData['Postal Votes'] = parseInt(
-                    candidateData['Postal Votes'],
-                    10
-                );
                 candidateData['Total Votes'] = parseInt(
                     candidateData['Total Votes'],
                     10
                 );
-                if (
-                    candidateData['Total Votes'] !==
-                    candidateData['Postal Votes'] + candidateData['EVM Votes']
-                ) {
-                    console.log('Calculation Mistake', cData.stateName);
-                }
                 mainData.metaData.totalVotesCasted =
                     mainData.metaData.totalVotesCasted +
                     candidateData['Total Votes'];
