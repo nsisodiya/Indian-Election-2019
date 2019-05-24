@@ -91,6 +91,13 @@ const dataProcessChains = [
                     mainData.metaData.totalVotesCasted +
                     candidateData['Total Votes'];
             });
+            cData['Total Casted Votes'] = cData.allCandidateData
+                .map(function(candidateData) {
+                    return candidateData['Total Votes'];
+                })
+                .reduce(function(a, b) {
+                    return a + b;
+                }, 0);
         });
     },
     function appendWinnerFlag(mainData) {
@@ -322,6 +329,7 @@ const allSections = [
         var sectionTitle = 'List of All Constituency and Winner Party';
         var sectionData = [];
         var totalVotersOfWinner = 0;
+        var totalCastedVotes = 0;
         mainData.map(function(cData, i) {
             var winnerIndex = util.findMaxInArrayOofObj(
                 cData.allCandidateData,
@@ -329,6 +337,7 @@ const allSections = [
             );
             cData.Winner = cData.allCandidateData[winnerIndex];
             totalVotersOfWinner += cData.Winner['Total Votes'];
+            totalCastedVotes += cData['Total Casted Votes'];
             sectionData.push({
                 Index: i + 1,
                 State: cData.stateName,
@@ -337,7 +346,8 @@ const allSections = [
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
                 Margin: cData.Margin,
-                'Total Votes': cData.Winner['Total Votes']
+                'Total Votes': cData.Winner['Total Votes'],
+                'Total Casted Votes': cData['Total Casted Votes']
             });
             //cData.allCandidateData.map(function(candidateData) {});
         });
@@ -349,7 +359,8 @@ const allSections = [
             'Winner Candidate': '-',
             'Winner Party': '-',
             'Total Votes': totalVotersOfWinner,
-            Margin: '-'
+            Margin: '-',
+            'Total Casted Votes': totalCastedVotes
         });
         return {
             sectionTitle: sectionTitle,
