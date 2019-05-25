@@ -208,9 +208,14 @@ const allSections = [
         var sectionData = util.stripArray(
             util.SortArrayOfObject(
                 Object.keys(mainData.metaData.partyWiseData).map(function(v) {
+                    var tcw = mainData.metaData.partyWiseData[v].count;
+                    if (tcw === undefined) {
+                        tcw = 0;
+                    }
                     return {
                         Party: v,
-                        Votes: mainData.metaData.partyWiseData[v].votes
+                        Votes: mainData.metaData.partyWiseData[v].votes,
+                        'Total Candidate Won': tcw
                     };
                 }),
                 'Votes'
