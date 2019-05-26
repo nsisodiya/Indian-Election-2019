@@ -156,8 +156,20 @@ const dataProcessChains = [
                         candidateData['Party']
                     ].votes = 0;
                 }
+                if (
+                    mainData.metaData.partyWiseData[candidateData['Party']][
+                        'TotalCandidates'
+                    ] === undefined
+                ) {
+                    mainData.metaData.partyWiseData[candidateData['Party']][
+                        'TotalCandidates'
+                    ] = 0;
+                }
                 mainData.metaData.partyWiseData[candidateData['Party']].votes +=
                     candidateData['Total Votes'];
+                mainData.metaData.partyWiseData[candidateData['Party']][
+                    'TotalCandidates'
+                ] += 1;
             });
         });
     },
@@ -215,7 +227,17 @@ const allSections = [
                     return {
                         Party: v,
                         Votes: mainData.metaData.partyWiseData[v].votes,
-                        'Total Candidate Won': tcw
+                        'Total Candidate by Party':
+                            mainData.metaData.partyWiseData[v][
+                                'TotalCandidates'
+                            ],
+                        'Total Candidate Won': tcw,
+                        Percentage:
+                            (tcw /
+                                mainData.metaData.partyWiseData[v][
+                                    'TotalCandidates'
+                                ]) *
+                            100
                     };
                 }),
                 'Votes'
