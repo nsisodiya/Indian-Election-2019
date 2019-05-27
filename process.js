@@ -74,140 +74,81 @@ const util = {
         return maxIndex;
     }
 };
-const dataProcessChains = [
-    function AddMetaData(mainData) {
-        mainData.metaData = {};
-    },
-    function convertStringsToNum(mainData) {
-        //This function calculate who won in a particular constituency
-        mainData.metaData.totalVotesCasted = 0;
-        mainData.map(function(cData) {
-            cData.allCandidateData.map(function(candidateData) {
-                candidateData['Total Votes'] = parseInt(
-                    candidateData['Total Votes'],
-                    10
-                );
-                mainData.metaData.totalVotesCasted =
-                    mainData.metaData.totalVotesCasted +
-                    candidateData['Total Votes'];
-            });
-            cData['Total Casted Votes'] = cData.allCandidateData
-                .map(function(candidateData) {
-                    return candidateData['Total Votes'];
-                })
-                .reduce(function(a, b) {
-                    return a + b;
-                }, 0);
-        });
-    },
-    function appendWinnerFlag(mainData) {
-        //This function calculate who won in a particular constituency
-        mainData.metaData.partyWiseData = {};
-        mainData.map(function(cData) {
-            var winnerIndex = util.findMaxInArrayOofObj(
-                cData.allCandidateData,
-                'Total Votes'
+var metaData = {
+    partyWiseData: {}
+};
+
+function processData(metaData) {
+    //This function calculate who won in a particular constituency
+    metaData.totalVotesCasted = 0;
+
+    var allParties = {};
+    metaData.constituencyData.map(function(cData) {
+        cData.allCandidateData.map(function(candidateData) {
+            candidateData['Total Votes'] = parseInt(
+                candidateData['Total Votes'],
+                10
             );
-            cData.Winner = cData.allCandidateData[winnerIndex];
-            cData.Margin = cData.allCandidateData
-                .map(function(cand) {
-                    return cData.Winner['Total Votes'] - cand['Total Votes'];
-                })
-                .sort()[1];
-            if (
-                mainData.metaData.partyWiseData[cData.Winner.Party] ===
-                undefined
-            ) {
-                mainData.metaData.partyWiseData[cData.Winner.Party] = {
-                    count: 0
+            allParties[candidateData.Party] = true;
+            metaData.totalVotesCasted += candidateData['Total Votes'];
+            if (metaData.partyWiseData[candidateData['Party']] === undefined) {
+                metaData.partyWiseData[candidateData['Party']] = {
+                    votes: 0,
+                    TotalCandidates: 0,
+                    'Winner Count': 0
                 };
             }
-            mainData.metaData.partyWiseData[cData.Winner.Party].count =
-                mainData.metaData.partyWiseData[cData.Winner.Party].count + 1;
-            //Calculate Margin
+            metaData.partyWiseData[candidateData['Party']].votes +=
+                candidateData['Total Votes'];
+            metaData.partyWiseData[candidateData['Party']][
+                'TotalCandidates'
+            ] += 1;
         });
-        mainData.metaData.partyData = util.SortArrayOfObject(
-            Object.keys(mainData.metaData.partyWiseData).map(function(v) {
-                return {
-                    Party: v,
-                    'Total Candidate Won':
-                        mainData.metaData.partyWiseData[v].count
-                };
-            }),
-            'Total Candidate Won'
+        cData['Total Casted Votes'] = cData.allCandidateData
+            .map(function(candidateData) {
+                return candidateData['Total Votes'];
+            })
+            .reduce(function(a, b) {
+                return a + b;
+            }, 0);
+        var winnerIndex = util.findMaxInArrayOofObj(
+            cData.allCandidateData,
+            'Total Votes'
         );
-    },
-    function VotesByParty(mainData) {
-        mainData.map(function(cData) {
-            cData.allCandidateData.map(function(candidateData) {
-                if (
-                    mainData.metaData.partyWiseData[candidateData['Party']] ===
-                    undefined
-                ) {
-                    mainData.metaData.partyWiseData[
-                        candidateData['Party']
-                    ] = {};
-                }
-                if (
-                    mainData.metaData.partyWiseData[candidateData['Party']]
-                        .votes === undefined
-                ) {
-                    mainData.metaData.partyWiseData[
-                        candidateData['Party']
-                    ].votes = 0;
-                }
-                if (
-                    mainData.metaData.partyWiseData[candidateData['Party']][
-                        'TotalCandidates'
-                    ] === undefined
-                ) {
-                    mainData.metaData.partyWiseData[candidateData['Party']][
-                        'TotalCandidates'
-                    ] = 0;
-                }
-                mainData.metaData.partyWiseData[candidateData['Party']].votes +=
-                    candidateData['Total Votes'];
-                mainData.metaData.partyWiseData[candidateData['Party']][
-                    'TotalCandidates'
-                ] += 1;
-            });
-        });
-    },
-    function ListAllParties(mainData) {
-        //This will list out all the parties
-        var allParties = {};
-        mainData.map(function(cData) {
-            cData.allCandidateData.map(function(candidateData) {
-                allParties[candidateData.Party] = true;
-            });
-        });
-        allParties = Object.keys(allParties).sort();
-        console.log(allParties);
-        mainData.metaData.allParties = allParties;
-    }
-];
+        cData.Winner = cData.allCandidateData[winnerIndex];
+        cData.Margin = cData.allCandidateData
+            .map(function(cand) {
+                return cData.Winner['Total Votes'] - cand['Total Votes'];
+            })
+            .sort()[1];
+        metaData.partyWiseData[cData.Winner.Party]['Winner Count'] += 1;
+    });
+    allParties = Object.keys(allParties).sort();
+    metaData.allParties = allParties;
+}
 
 function runDataProcessPipeLine(callback) {
-    util.getJSONDataFromUrl('./Election2019Results.json', function(mainData) {
-        dataProcessChains.forEach(function(fun) {
-            fun(mainData);
-        });
+    util.getJSONDataFromUrl('./Election2019Results.json', function(
+        constituencyData
+    ) {
+        metaData.constituencyData = constituencyData;
+        processData(metaData);
         //AllDataProcessing is over, now, we can create sections.
         //loader
         $('#loader').remove();
-        console.log('mainData', mainData);
-        generateAllSections(mainData);
+        generateAllSections(metaData);
+        console.log('metaData', metaData);
     });
 }
 
 runDataProcessPipeLine();
 
 const allSections = [
-    function TotalVotesPartyWise(mainData) {
+    function TotalVotesPartyWise(metaData) {
         var sectionTitle = 'Total Votes';
         var sectionData = [
             {
-                'Total Votes Casted': mainData.metaData.totalVotesCasted
+                'Total Votes Casted': metaData.totalVotesCasted
             }
         ];
         return {
@@ -215,28 +156,24 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function TotalVotesPartyWise(mainData) {
+    function TotalVotesPartyWise(metaData) {
         var sectionTitle = 'Top 30 Parties with their Votes';
         var sectionData = util.stripArray(
             util.SortArrayOfObject(
-                Object.keys(mainData.metaData.partyWiseData).map(function(v) {
-                    var tcw = mainData.metaData.partyWiseData[v].count;
+                Object.keys(metaData.partyWiseData).map(function(v) {
+                    var tcw = metaData.partyWiseData[v]['Winner Count'];
                     if (tcw === undefined) {
                         tcw = 0;
                     }
                     return {
                         Party: v,
-                        Votes: mainData.metaData.partyWiseData[v].votes,
+                        Votes: metaData.partyWiseData[v].votes,
                         'Total Candidate by Party':
-                            mainData.metaData.partyWiseData[v][
-                                'TotalCandidates'
-                            ],
+                            metaData.partyWiseData[v]['TotalCandidates'],
                         'Total Candidate Won': tcw,
                         Percentage:
                             (tcw /
-                                mainData.metaData.partyWiseData[v][
-                                    'TotalCandidates'
-                                ]) *
+                                metaData.partyWiseData[v]['TotalCandidates']) *
                             100
                     };
                 }),
@@ -249,18 +186,31 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function TotalVotesPartyWise(mainData) {
+    function TotalVotesPartyWise(metaData) {
         var sectionTitle = 'Parties wise Data';
-        var sectionData = mainData.metaData.partyData;
+        var sectionData = util.SortArrayOfObject(
+            Object.keys(metaData.partyWiseData)
+                .map(function(v) {
+                    return {
+                        Party: v,
+                        'Total Candidate Won':
+                            metaData.partyWiseData[v]['Winner Count']
+                    };
+                })
+                .filter(function(v) {
+                    return v['Total Candidate Won'] > 0;
+                }),
+            'Total Candidate Won'
+        );
         return {
             sectionTitle: sectionTitle,
             sectionData: sectionData
         };
     },
-    function Top50WithHighestMargin(mainData) {
+    function Top50WithHighestMargin(metaData) {
         var sectionTitle = 'Top 50 Candidate who won with High margin';
         var listOfWinners = [];
-        mainData.map(function(cData) {
+        metaData.constituencyData.map(function(cData) {
             listOfWinners.push({
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
@@ -279,10 +229,10 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function Top50WithLeastMargin(mainData) {
+    function Top50WithLeastMargin(metaData) {
         var sectionTitle = 'Top 50 Candidate who won with Least margin';
         var listOfWinners = [];
-        mainData.map(function(cData) {
+        metaData.constituencyData.map(function(cData) {
             listOfWinners.push({
                 'Winner Candidate': cData.Winner.Candidate,
                 'Winner Party': cData.Winner.Party,
@@ -301,10 +251,10 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function Top50CandidateWithHighestVotes(mainData) {
+    function Top50CandidateWithHighestVotes(metaData) {
         var sectionTitle = 'These 50 candidate got maximum votes in';
         var fullListOfAllCandidate = [];
-        mainData.map(function(cData) {
+        metaData.constituencyData.map(function(cData) {
             cData.allCandidateData.map(function(candidateData) {
                 fullListOfAllCandidate.push({
                     Candidate: candidateData.Candidate,
@@ -325,10 +275,10 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function Top50CandidateWithLowestVotes(mainData) {
+    function Top50CandidateWithLowestVotes(metaData) {
         var sectionTitle = 'These 50 candidate got least votes';
         var fullListOfAllCandidate = [];
-        mainData.map(function(cData) {
+        metaData.constituencyData.map(function(cData) {
             cData.allCandidateData.map(function(candidateData) {
                 fullListOfAllCandidate.push({
                     Candidate: candidateData.Candidate,
@@ -351,13 +301,13 @@ const allSections = [
             sectionData: sectionData
         };
     },
-    function ListAllWinners(mainData) {
+    function ListAllWinners(metaData) {
         //This Section list out all winners.
         var sectionTitle = 'List of All Constituency and Winner Party';
         var sectionData = [];
         var totalVotersOfWinner = 0;
         var totalCastedVotes = 0;
-        mainData.map(function(cData, i) {
+        metaData.constituencyData.map(function(cData, i) {
             var winnerIndex = util.findMaxInArrayOofObj(
                 cData.allCandidateData,
                 'Total Votes'
@@ -383,7 +333,6 @@ const allSections = [
                 'Margin Percentage':
                     (cData.Margin / cData['Total Casted Votes']) * 100
             });
-            //cData.allCandidateData.map(function(candidateData) {});
         });
         sectionData.push({
             Index: 'Total',
@@ -404,9 +353,9 @@ const allSections = [
         };
     }
 ];
-function generateAllSections(mainData) {
+function generateAllSections(metaData) {
     allSections.forEach(function(sectionDataGenfun) {
-        var sData = sectionDataGenfun(mainData);
+        var sData = sectionDataGenfun(metaData);
         $('#sections').append(`
         <div class="section">
             <h1>${sData.sectionTitle}</h1>
