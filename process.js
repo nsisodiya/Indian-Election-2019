@@ -207,6 +207,23 @@ const allSections = [
             sectionData: sectionData
         };
     },
+    function AllParties(metaData) {
+        var sectionTitle = 'All Parties';
+        var sectionData = [
+            {
+                'Total Parties Count': metaData.allParties.length - 2,
+                Parties: metaData.allParties
+                    .map(function(v, i) {
+                        return i + 1 + '. ' + v;
+                    })
+                    .join(', ')
+            }
+        ];
+        return {
+            sectionTitle: sectionTitle,
+            sectionData: sectionData
+        };
+    },
     function Top50WithHighestMargin(metaData) {
         var sectionTitle = 'Top 50 Candidate who won with High margin';
         var listOfWinners = [];
